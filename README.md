@@ -98,7 +98,7 @@ myftp       : 172.30.0.30
 mymail      : 172.30.0.40
 test-client : 172.30.0.100
 ```
-
+위 IP는 Docker 이미지 내부에 하드코딩하는 값이 아니라, compose/docker-compose.yml로 통합 검증 환경을 실행할 때 Docker Compose가 컨테이너에 부여하는 실행환경 기준값입니다.
 DNS zone 파일의 A/MX 레코드는 위 IP 기준과 일치해야 합니다.
 
 ## 4. 브랜치 작업 방식
@@ -535,6 +535,10 @@ mail.example.com  → 172.30.0.40
 example.com MX    → mail.example.com
 ```
 
+DNS 서버의 zone 파일에는 통합 검증용 A/MX 레코드가 포함된다. 이 레코드는 `compose/docker-compose.yml`에서 부여하는 고정 IP와 일치해야 한다.
+
+단, 해당 IP는 Dockerfile에 하드코딩하지 않는다. Dockerfile은 BIND 설치, 설정 파일 복사, 포트 노출, 실행 명령 정의를 담당하고, 실제 컨테이너 IP는 Compose 실행환경에서 부여한다.
+
 ### WEB
 
 ```text
@@ -560,6 +564,14 @@ volume           : ftp-pub:/var/ftp/pub
 접속 계정        : anonymous
 통합 IP          : 172.30.0.30
 ```
+
+#### FTP passive mode 기준
+
+FTP의 `PASV_ADDRESS`는 passive mode에서 FTP 서버가 클라이언트에게 알려주는 접속 주소이다.
+
+통합 검증에서는 `test-client` 컨테이너가 같은 `infra-net` 네트워크 안에서 FTP 서버에 접속하므로 `PASV_ADDRESS`는 `172.30.0.30`으로 설정한다.
+
+호스트 PC에서 포트 매핑을 통해 FTP 단독 테스트를 수행하는 경우에는 실행 환경에 따라 `PASV_ADDRESS`를 호스트에서 접근 가능한 IP 또는 호스트명으로 별도 지정해야 한다. 따라서 `172.30.0.30`은 Docker Hub 이미지 자체의 고정값이 아니라 Compose 통합 검증용 실행환경 값이다.
 
 ### MAIL
 
@@ -634,6 +646,8 @@ infra-web:1.0
 infra-ftp:1.0
 infra-mail:1.0
 ```
+
+FTP 서비스의 `PASV_ADDRESS=172.30.0.30`은 Compose 통합 검증에서 `test-client`가 내부 Docker 네트워크를 통해 FTP 서버에 접속하기 위한 값입니다.
 
 Docker Hub 이미지 이름은 팀원별 계정이 다를 수 있으므로, 최종 통합 검증에서는 로컬 이미지 기준을 사용합니다.
 
@@ -736,6 +750,10 @@ Docker Hub 배포 검증
 - 단독 실행
 - Up 상태와 기본 서비스 응답 확인
 ```
+
+Docker Hub에 업로드하는 이미지는 특정 IP에 의존하지 않도록 제작합니다.
+
+통합 검증에서 사용하는 172.30.0.x 대역은 compose/docker-compose.yml 실행환경에서 부여되는 값이며, 단독 실행 또는 Docker Hub pull 테스트에서는 사용자가 docker run 또는 별도 Compose 파일에서 네트워크, 포트, volume, 환경 변수를 지정합니다.
 
 ## 14. Optional Script
 
