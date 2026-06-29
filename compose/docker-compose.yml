@@ -28,7 +28,7 @@ services:
         ipv4_address: 172.30.0.30
     ports:
       - "2121:21"
-      - "21100-21110:21100-21110"
+      - "21100-21110:21100-21110/tcp"
     environment:
       PASV_ADDRESS: 172.30.0.30
     volumes:
@@ -61,6 +61,8 @@ networks:
     driver: bridge
     ipam:
       config:
+        # Fixed IPs are used only for integrated verification.
+        # These values must match DNS zone A/MX records.
         - subnet: 172.30.0.0/24
           gateway: 172.30.0.1
 
