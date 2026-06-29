@@ -1,0 +1,70 @@
+services:
+  mydns:
+    image: infra-dns:1.0
+    container_name: mydns
+    networks:
+      infra-net:
+        ipv4_address: 172.30.0.10
+    ports:
+      - "5353:53/udp"
+      - "5353:53/tcp"
+
+  myweb:
+    image: infra-web:1.0
+    container_name: myweb
+    networks:
+      infra-net:
+        ipv4_address: 172.30.0.20
+    ports:
+      - "8080:80"
+    volumes:
+      - web-html:/usr/share/nginx/html
+
+  myftp:
+    image: infra-ftp:1.0
+    container_name: myftp
+    networks:
+      infra-net:
+        ipv4_address: 172.30.0.30
+    ports:
+      - "2121:21"
+      - "21100-21110:21100-21110"
+    environment:
+      PASV_ADDRESS: 172.30.0.30
+    volumes:
+      - ftp-pub:/var/ftp/pub
+
+  mymail:
+    image: infra-mail:1.0
+    container_name: mymail
+    networks:
+      infra-net:
+        ipv4_address: 172.30.0.40
+    ports:
+      - "2525:25"
+    volumes:
+      - mail-home:/home
+
+  test-client:
+    image: alpine:3.23
+    container_name: test-client
+    command: sleep infinity
+    networks:
+      infra-net:
+        ipv4_address: 172.30.0.100
+    dns:
+      - 172.30.0.10
+
+networks:
+  infra-net:
+    name: infra-net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+          gateway: 172.30.0.1
+
+volumes:
+  web-html:
+  ftp-pub:
+  mail-home:
