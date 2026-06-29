@@ -127,29 +127,247 @@ jth-temp
 
 작업 완료 후에는 본인 브랜치에서 `main` 브랜치로 Pull Request를 생성합니다.
 
-## 5. 기본 작업 흐름
+## 5. Git 작업 흐름
 
-저장소를 clone합니다.
+이 프로젝트는 `main` 브랜치에 직접 작업하지 않고, 개인 브랜치에서 작업한 뒤 Pull Request로 `main`에 반영한다.
+
+### 5-1. Git 사용자 정보 설정
+
+Git 사용자 정보는 VM에서 최초 1회 설정한다.
+
+```bash
+git config --global user.name "GitHub Name"
+git config --global user.email "GitHub Email"
+```
+
+설정 확인:
+
+```bash
+git config --global --list | grep user
+```
+
+이 설정은 특정 브랜치에만 적용되는 것이 아니라, 해당 VM 사용자 계정의 Git commit 작성자 정보로 사용된다.
+
+### 5-2. 처음 작업을 시작할 때
+
+저장소를 clone한다.
 
 ```bash
 git clone https://github.com/tjung03/docker-server-images.git
 cd docker-server-images
 ```
 
-본인 브랜치를 생성합니다.
+`main` 브랜치가 최신 상태인지 확인한다.
+
+```bash
+git switch main
+git pull origin main
+```
+
+개인 브랜치를 생성하고 이동한다.
 
 ```bash
 git switch -c <본인이니셜>
-git push -u origin <본인이니셜>
 ```
 
-자신의 브랜치에서 Global config 설정을 합니다.
+예시:
+
 ```bash
-git config --global user.name "GitHub Name"
-git config --global user.email "GitHub Email"
+git switch -c jth
 ```
 
-작업 후 commit / push를 진행합니다.
+처음 만든 개인 브랜치는 원격 저장소에 한 번 등록한다.
+
+```bash
+git push -u origin jth
+```
+
+`-u` 옵션은 로컬 브랜치와 원격 브랜치를 연결하는 옵션이다. 처음 한 번만 사용하면 이후에는 해당 브랜치에서 `git push`, `git pull`만 사용할 수 있다.
+
+### 5-3. 브랜치 이동 및 확인
+
+기존 브랜치로 이동할 때는 `-c` 옵션을 사용하지 않는다.
+
+```bash
+git switch jth
+```
+
+현재 로컬 브랜치 목록을 확인한다.
+
+```bash
+git branch
+```
+
+현재 위치한 브랜치는 `*`로 표시된다.
+
+```text
+* jth
+  main
+```
+
+원격 브랜치 목록을 확인한다.
+
+```bash
+git branch -r
+```
+
+로컬 브랜치와 원격 브랜치를 모두 확인한다.
+
+```bash
+git branch -a
+```
+
+### 5-4. 작업 후 commit / push
+
+현재 변경 상태를 확인한다.
+
+```bash
+git status
+```
+
+변경 파일을 commit 대상에 추가한다.
+
+```bash
+git add .
+```
+
+커밋을 생성한다.
+
+```bash
+git commit -m "feat(web): add nginx Dockerfile" -m "Modify volume path"
+```
+(첫번째 m 옵션은 제목, 두번째 m 옵션은 내용)
+
+개인 브랜치에 push한다.
+
+```bash
+git push
+```
+
+### 5-5. main이 갱신되었을 때 내 브랜치에 반영하는 방법
+
+다른 팀원의 작업이 `main`에 merge되면, 내 개인 브랜치에도 최신 `main` 내용을 반영해야 한다.
+
+먼저 현재 작업 상태를 확인한다.
+
+```bash
+git status
+```
+
+작업 중인 내용이 있다면 먼저 commit한다.
+
+```bash
+git add .
+git commit -m "feat(web): add nginx Dockerfile"
+```
+
+`main` 브랜치로 이동한 뒤 최신 내용을 가져온다.
+
+```bash
+git switch main
+git pull origin main
+```
+
+다시 내 브랜치로 이동한다.
+
+```bash
+git switch jth
+```
+
+최신 `main` 내용을 내 브랜치에 반영한다.
+
+```bash
+git merge main
+```
+
+문제가 없으면 내 브랜치를 원격 저장소에 push한다.
+
+```bash
+git push
+```
+
+이 프로젝트에선 가능하면 아래 흐름을 사용한다.
+
+```text
+main으로 이동
+→ git pull origin main
+→ 내 브랜치로 이동
+→ git merge main
+→ 작업 계속
+```
+
+### 5-6. 주요 Git 명령어 의미
+
+| 명령어 | 의미 |
+|---|---|
+| `git clone` | 원격 저장소를 로컬로 복사 |
+| `git switch <branch>` | 기존 브랜치로 이동 |
+| `git switch -c <branch>` | 새 브랜치를 만들고 이동 |
+| `git status` | 현재 변경 상태 확인 |
+| `git add` | commit할 파일을 staging area에 추가 |
+| `git commit` | 현재 변경 내용을 하나의 기록으로 저장 |
+| `git push` | 로컬 commit을 원격 저장소로 업로드 |
+| `git fetch` | 원격 저장소의 최신 정보만 가져옴 |
+| `git pull` | 원격 저장소의 최신 내용을 가져와 현재 브랜치에 반영 |
+| `git merge` | 다른 브랜치의 변경 내용을 현재 브랜치에 합침 |
+| `git branch` | 로컬 브랜치 목록 확인 |
+| `git branch -r` | 원격 브랜치 목록 확인 |
+| `git branch -a` | 로컬/원격 브랜치 전체 확인 |
+| `git log` | commit 기록 확인 |
+
+### 5-7. fetch, pull, merge 차이
+
+`fetch`는 원격 저장소의 변경 정보를 가져오기만 한다. 현재 작업 파일에는 바로 반영하지 않는다.
+
+```bash
+git fetch origin
+```
+
+`pull`은 원격 저장소의 변경 내용을 가져오고 현재 브랜치에 반영한다.
+
+```bash
+git pull origin main
+```
+
+`merge`는 다른 브랜치의 변경 내용을 현재 브랜치에 합친다.
+
+```bash
+git merge main
+```
+
+일반 작업에서는 `main`으로 이동한 뒤 `git pull origin main`을 사용(원격main->로컬main)하고, 개인 브랜치에서 `git merge main`을 사용(로컬main->로컬branch)하는 흐름으로 통일한다.
+
+### 5-8. commit 로그 확인
+
+기본 로그 확인:
+
+```bash
+git log --oneline
+```
+
+브랜치 흐름을 함께 확인:
+
+```bash
+git log --oneline --graph --decorate --all
+```
+
+필요하면 아래 alias를 등록해서 짧게 사용할 수 있다.
+
+```bash
+git config --global alias.lg "log --oneline --graph --decorate --all"
+git config --global alias.st "status -sb"
+```
+
+등록 후 사용:
+
+```bash
+git lg
+git st
+```
+
+### 5-9. Pull Request 흐름
+
+개인 브랜치에서 작업을 완료하면 먼저 commit 후 push한다.
 
 ```bash
 git status
@@ -158,7 +376,52 @@ git commit -m "feat(web): add nginx Dockerfile"
 git push
 ```
 
-GitHub에서 본인 브랜치에서 `main` 브랜치로 Pull Request를 생성합니다.
+`git push`는 개인 브랜치의 commit을 GitHub에 올리는 명령이다.  
+`git push`만으로 `main`에 자동 반영되지는 않는다.
+
+GitHub 저장소 페이지에서 Pull Request를 생성한다.
+
+```text
+base: main
+compare: <개인 브랜치>
+```
+
+예시:
+
+```text
+base: main
+compare: jth
+```
+
+Pull Request 제목 예시:
+
+```text
+[WEB] nginx 서버 이미지 구현
+```
+
+Pull Request 본문에는 아래 내용을 작성한다.
+
+```text
+- 작업한 내용
+- 실행한 검증 명령
+- 확인한 결과
+- 문제 또는 미확인 사항
+```
+
+Pull Request가 확인된 뒤 `Merge pull request`를 누르면 개인 브랜치의 변경 내용이 `main`에 반영된다.
+
+기본 흐름은 다음과 같다.
+
+```text
+개인 브랜치에서 작업
+→ commit
+→ push
+→ GitHub 웹사이트에서 Pull Request 생성
+(다른 팀원)
+→ 변경 내용 확인
+→ Merge pull request
+→ main에 반영
+```
 
 ## 6. Commit Convention
 
