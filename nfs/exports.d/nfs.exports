@@ -1,0 +1,61 @@
+# This file is managed by entrypoint.sh at container startup.
+#
+# This image runs an NFSv4-only server.
+#
+# NFSv4 uses a pseudo-root export. In this image, the Docker volume
+# should be mounted at /exports, so that the NFSv4 pseudo-root itself
+# is backed by a Docker volume instead of the container overlay filesystem.
+#
+# Default internal layout:
+#
+#   Docker volume mount:       /exports
+#   NFSv4 pseudo-root:         /exports
+#   Real shared directory:     /exports/share
+#   Log directory:             /exports/share/logs
+#   NFSv4 visible path:        /share
+#   Client mount path:         <docker-host-ip>:/share
+#
+# Environment variables:
+#
+#   NFS_V4_ROOT
+#     NFSv4 pseudo-root directory.
+#     Default: /exports
+#
+#   NFS_EXPORT_NAME
+#     Path name visible to NFSv4 clients under the pseudo-root.
+#     Default: share
+#
+#   NFS_EXPORT_DIR
+#     Real directory used for shared data.
+#     Default: /exports/share
+#
+#   NFS_LOG_DIR
+#     Log directory created at startup.
+#     Default: /exports/share/logs
+#
+#   NFS_ALLOWED_CLIENTS
+#     Space-separated list of client IP addresses or subnets.
+#     Example: "192.168.10.20 172.18.0.0/16"
+#
+#   NFS_EXPORT_OPTIONS
+#     Export options for the real shared path.
+#     Default: rw,sync,no_subtree_check,no_root_squash,insecure
+#
+#   NFS_V4_ROOT_OPTIONS
+#     Export options for the NFSv4 pseudo-root.
+#     Default: rw,fsid=0,crossmnt,no_subtree_check,no_root_squash,insecure
+#
+# Example generated result:
+#
+#   /exports 192.168.10.20(rw,fsid=0,crossmnt,no_subtree_check,no_root_squash,insecure)
+#   /exports/share 192.168.10.20(rw,sync,no_subtree_check,no_root_squash,insecure)
+#
+# Notes:
+#
+# - Clients mount <docker-host-ip>:/share.
+# - The container should run with --network host.
+# - Do not use -p 2049:2049/tcp with --network host.
+# - NFSv4 clients use TCP 2049 for normal mounts.
+# - This image starts rpc.mountd as an internal helper for the Linux
+#   kernel NFS server export/auth cache. NFSv4 clients do not mount
+#   through the NFS MOUNT protocol like NFSv3 clients.
