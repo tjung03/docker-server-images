@@ -90,6 +90,38 @@ docker rm mynfs
 
 공유 이름은 기본 경로 조합을 통해 실제 디렉토리에 반영됩니다. `NFS_EXPORT_DIR`를 직접 지정하면 클라이언트 경로도 기준 경로 아래의 실제 디렉토리 위치에 맞춰 사용해야 합니다.
 
+## WEB 설정과 응답 확인
+
+README의 WEB 빠른 실행으로 `myweb`을 시작한 뒤 확인합니다.
+
+```bash
+docker exec myweb httpd -t
+docker exec myweb httpd -M
+docker exec myweb httpd -S
+curl -i http://localhost:8080/
+curl -ki https://localhost:8443/
+curl -i http://localhost:8080/missing-page
+curl -ki https://localhost:8443/missing-page
+```
+
+| 확인 항목 | 확인할 내용 |
+|---|---|
+| `httpd -t` | Apache 설정 구문 결과 `Syntax OK` |
+| `httpd -M` | HTTPS 처리에 필요한 `ssl_module` 로드 |
+| `httpd -S` | 443 가상 호스트와 `www.example.com` 설정 |
+| HTTP·HTTPS 홈 요청 | HTTP `200`과 `Welcome to infra-web Server!` 본문 |
+| HTTP·HTTPS 없는 경로 요청 | HTTP `404`와 `My Custom 404 Error Page` 본문 |
+
+404 상태와 사용자 지정 본문을 함께 확인하면 `.htaccess`의 `ErrorDocument` 적용 여부를 살펴볼 수 있습니다. HTTPS 요청은 자체 서명 인증서를 사용하므로 실습 명령에 `-k`를 지정합니다.
+
+인증서의 subject·유효기간·키 정보를 확인하려면 다음 명령을 사용합니다.
+
+```bash
+docker exec myweb openssl x509 -in /etc/pki/tls/certs/server.crt -noout -subject -dates -text
+```
+
+인증서 subject의 CN은 `myweb`, HTTPS 가상 호스트의 `ServerName`은 `www.example.com:443`으로 설정되어 있습니다.
+
 ## WEB 콘텐츠
 
 [Dockerfile](../web/Dockerfile)은 `ADD src.tar /var/www/html`로 콘텐츠를 배치합니다. 아카이브에는 다음 세 파일이 있습니다.
