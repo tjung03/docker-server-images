@@ -8,7 +8,7 @@
 
 | 참여자 | 담당 | 주요 작업 |
 |---|---|---|
-| **tjung03 · 정태훈** | 프로젝트 운영·공통 실행 구성·NFS | 서버별 작업·완료 기준 수립, Git 협업 규칙 정리, Compose 구성과 PR 통합, NFSv4 서버 구현 |
+| **tjung03** | 프로젝트 운영·공통 실행 구성·NFS | 서버별 작업·완료 기준 수립, Git 협업 규칙 정리, Compose 구성과 PR 통합, NFSv4 서버 구현 |
 | **joohuijin** | WEB | Apache HTTP/HTTPS 이미지, 자체 서명 인증서, 웹 콘텐츠와 사용자 지정 404 응답 구현 |
 
 작업 기록: [작업·완료 기준](https://github.com/tjung03/docker-server-images/issues/1) · [협업 규칙](https://github.com/tjung03/docker-server-images/commit/6b0f38c39c9fd836061d6dcf8447bfdf4da203eb) · [Compose 구성](https://github.com/tjung03/docker-server-images/commit/266f1072514e1db4bb811b591e0d7c1bdd057843) · [WEB PR](https://github.com/tjung03/docker-server-images/pull/9) · [NFS PR](https://github.com/tjung03/docker-server-images/pull/10)
