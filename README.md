@@ -4,16 +4,14 @@
 
 현재 `main`의 구현은 **WEB·NFS**입니다. DNS·FTP·MAIL은 서비스 이름, 포트, 볼륨을 정한 Compose 구성과 작업 디렉토리가 준비되어 있습니다.
 
-## 주요 구현과 기여
+## 역할과 책임
 
-| 구현 | 동작 | 코드·작업 기록 |
+| 참여자 | 담당 | 주요 작업 |
 |---|---|---|
-| NFSv4 서버 — tjung03 | 시작 시 export 설정 생성, 커널 NFS 서버 구동, 종료 신호에 따른 export·서버 정리 | [entrypoint.sh](nfs/entrypoint.sh), [PR #10](https://github.com/tjung03/docker-server-images/pull/10) |
-| 공유 저장소 — tjung03 | `/exports`에 볼륨을 연결하고 `/share`를 클라이언트에 공개, 하위 `logs` 디렉토리 준비 | [NFS Dockerfile](nfs/Dockerfile), [export 구성 설명](nfs/exports.d/nfs.exports) |
-| Apache 웹 서버 — joohuijin | HTTP·HTTPS 제공, 자체 서명 인증서 생성, `.htaccess`로 사용자 지정 404 응답 | [WEB Dockerfile](web/Dockerfile), [TLS 설정](web/ssl.conf), [PR #9](https://github.com/tjung03/docker-server-images/pull/9) |
-| Compose 구성 보완 — tjung03 | FTP Passive 데이터 포트의 TCP 지정과 네트워크 설명 추가 | [PR #7](https://github.com/tjung03/docker-server-images/pull/7) |
+| **tjung03 · 정태훈** | 프로젝트 운영·공통 실행 구성·NFS | 서버별 작업·완료 기준 수립, Git 협업 규칙 정리, Compose 구성과 PR 통합, NFSv4 서버 구현 |
+| **joohuijin** | WEB | Apache HTTP/HTTPS 이미지, 자체 서명 인증서, 웹 콘텐츠와 사용자 지정 404 응답 구현 |
 
-NFS 구현은 컨테이너 내부 경로와 클라이언트 경로를 구분합니다. `/exports`를 NFSv4의 기준 경로(`fsid=0`)로 잡아, 클라이언트가 `서버주소:/share`로 공유 디렉토리에 접근하도록 구성했습니다. 설정 생성부터 `nfsd` 마운트, 서버 시작, 종료 처리까지 한 [진입 스크립트](nfs/entrypoint.sh)에 모았습니다.
+작업 기록: [작업·완료 기준](https://github.com/tjung03/docker-server-images/issues/1) · [협업 규칙](https://github.com/tjung03/docker-server-images/commit/6b0f38c39c9fd836061d6dcf8447bfdf4da203eb) · [Compose 구성](https://github.com/tjung03/docker-server-images/commit/266f1072514e1db4bb811b591e0d7c1bdd057843) · [WEB PR](https://github.com/tjung03/docker-server-images/pull/9) · [NFS PR](https://github.com/tjung03/docker-server-images/pull/10)
 
 ## 저장소 구조
 
@@ -32,6 +30,29 @@ NFS 구현은 컨테이너 내부 경로와 클라이언트 경로를 구분합�
     ├── usage.md             # NFS 실행·확인, Compose 구성, WEB 콘텐츠
     └── collaboration.md     # 팀 작업 규칙과 이미지 배포 절차
 ```
+
+## 주요 구현
+
+### WEB · Apache HTTP/HTTPS 이미지
+
+[WEB Dockerfile](web/Dockerfile)은 Apache와 `mod_ssl`을 설치하고, 웹 콘텐츠와 TLS 설정을 이미지에 함께 배치합니다. 컨테이너 시작 시 `httpd -D FOREGROUND`를 실행하여 Apache 프로세스로 웹 요청을 처리합니다.
+
+| 구현 지점 | 동작 | 코드 |
+|---|---|---|
+| HTTPS 구성 | 빌드 시 RSA 2048비트·365일 자체 서명 인증서를 생성하고, 443 가상 호스트에서 인증서·키 경로를 참조 | [Dockerfile](web/Dockerfile), [ssl.conf](web/ssl.conf) |
+| 디렉토리별 설정 | HTTP 문서 루트와 HTTPS 가상 호스트의 `/var/www/html`에 `AllowOverride All`을 적용하여 `.htaccess` 사용 | [Dockerfile](web/Dockerfile), [ssl.conf](web/ssl.conf) |
+| 콘텐츠 배포 | `src.tar`의 홈 페이지·오류 페이지·`.htaccess`를 빌드 시 문서 루트에 배치 | [src.tar](web/src.tar), [콘텐츠 구성](docs/usage.md#web-콘텐츠) |
+| 사용자 지정 오류 응답 | `.htaccess`의 `ErrorDocument 404 /error.html`로 없는 경로의 요청을 오류 페이지에 연결 | [오류 페이지](web/error.html), [동작 확인](docs/usage.md#web-설정과-응답-확인) |
+
+HTTP와 HTTPS는 같은 문서 루트를 사용합니다. 홈 페이지 접속과 없는 경로의 요청으로 콘텐츠 배포·TLS·디렉토리 설정 적용을 각각 확인할 수 있습니다.
+
+### NFS · 환경변수 기반 공유 저장소
+
+[NFS Dockerfile](nfs/Dockerfile)은 서버 패키지와 공유 디렉토리를 준비하고, [entrypoint.sh](nfs/entrypoint.sh)가 실행 시 허용 클라이언트·export 옵션·스레드 수를 읽어 서버를 시작합니다.
+
+`/exports`를 NFSv4의 기준 경로(`fsid=0`)로 잡아, 클라이언트가 `서버주소:/share`로 공유 디렉토리에 접근하도록 구성했습니다. `/exports`에는 Docker 볼륨을 연결하고, 공유 디렉토리 아래에는 로그 저장용 `logs/`를 준비합니다.
+
+진입 스크립트는 export 파일 생성, `nfsd` 파일시스템 마운트, 커널 NFS 서버와 `rpc.mountd` 시작을 순서대로 수행합니다. `SIGTERM`·`SIGINT`를 받으면 helper 프로세스 종료, export 해제, NFS 스레드 종료를 처리합니다. [공유 경로·환경변수](docs/usage.md#공유-경로와-환경변수)에서 각 설정을 확인할 수 있습니다.
 
 ## WEB 빠른 실행
 
