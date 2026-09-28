@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="470" viewBox="0 0 1000 470" role="img" aria-labelledby="title desc">
+<title id="title">docker-server-images · 현재 구현 구조</title><desc id="desc">현재 main에서 직접 빌드 가능한 Apache WEB과 NFSv4 서버를 중심으로 각 Docker 볼륨과 외부 클라이언트 연결을 구분한다. WEB과 NFS 볼륨은 서로 분리되어 있다.</desc>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8Z" fill="#64748b"/></marker></defs>
+<rect width="1000" height="470" rx="16" fill="#f8fafc"/><g font-family="Arial,'Noto Sans CJK KR','Malgun Gothic',sans-serif">
+<text x="32" y="44" font-size="27" font-weight="700" fill="#17253b">docker-server-images · 현재 구현 구조</text>
+<text x="32" y="74" font-size="16" fill="#4b5e78">현재 main에서 직접 빌드 가능한 WEB · NFS 기준</text>
+<rect x="32" y="106" width="936" height="274" rx="12" fill="#edf2ff" stroke="#b8c7e3"/>
+<text x="52" y="138" font-size="17" font-weight="700" fill="#4865a0">Docker Compose · infra-net</text>
+<rect x="62" y="166" width="385" height="184" rx="12" fill="#fff" stroke="#cbd5e1"/>
+<text x="84" y="199" font-size="21" font-weight="700" fill="#163b76">myweb · Apache HTTP/HTTPS</text>
+<text x="84" y="229" font-size="16" fill="#263a54">Host 8080 → 80 · 8443 → 443</text>
+<rect x="84" y="253" width="155" height="68" rx="9" fill="#f5f8ff" stroke="#d4dbe7"/><text x="101" y="280" font-size="16" font-weight="700" fill="#163b76">web-html</text><text x="101" y="304" font-size="14" fill="#263a54">/var/www/html</text>
+<rect x="257" y="253" width="165" height="68" rx="9" fill="#f5f8ff" stroke="#d4dbe7"/><text x="274" y="280" font-size="16" font-weight="700" fill="#163b76">web-logs</text><text x="274" y="304" font-size="14" fill="#263a54">/var/log/httpd</text>
+<rect x="553" y="166" width="385" height="184" rx="12" fill="#fff" stroke="#cbd5e1"/>
+<text x="575" y="199" font-size="21" font-weight="700" fill="#086b62">mynfs · NFSv4 Server</text>
+<text x="575" y="229" font-size="16" fill="#263a54">Host TCP 2049 · privileged</text>
+<rect x="575" y="253" width="220" height="68" rx="9" fill="#ecf8f4" stroke="#a9d5c6"/><text x="593" y="280" font-size="16" font-weight="700" fill="#086b62">nfs-share</text><text x="593" y="304" font-size="14" fill="#263a54">/exports</text>
+<path d="M447 224 H543" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6 5"/>
+<text x="460" y="211" font-size="14" fill="#64748b">depends_on · 시작 순서</text>
+<rect x="32" y="398" width="450" height="48" rx="10" fill="#fff6ea" stroke="#e5cba9"/><text x="52" y="428" font-size="16" fill="#946018">Browser / HTTP Client → myweb</text>
+<rect x="518" y="398" width="450" height="48" rx="10" fill="#ecf8f4" stroke="#a9d5c6"/><text x="538" y="428" font-size="16" fill="#086b62">External Linux NFS Client → mynfs :2049</text>
+</g></svg>
