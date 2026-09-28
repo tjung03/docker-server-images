@@ -6,9 +6,15 @@
 
 ## 현재 구현 구조
 
-![현재 main에서 구현된 WEB과 NFS 컨테이너, 각 Docker 볼륨, 외부 클라이언트의 관계](docs/images/current-structure.svg)
+![현재 main에서 직접 빌드 가능한 WEB과 NFS 컨테이너 및 각 Docker 볼륨](docs/images/current-structure.svg)
 
-그림은 현재 `main`에서 직접 빌드할 수 있는 **WEB·NFS**만 나타냅니다. Compose에는 DNS·FTP·MAIL 서비스 정의도 있지만 해당 이미지 구현은 아직 포함되어 있지 않습니다. 또한 WEB 로그의 `web-logs`와 NFS의 `nfs-share`는 별도 볼륨이며, WEB 로그를 NFS로 자동 마운트하는 구성은 없습니다.
+현재 `main`에서 직접 빌드할 수 있는 대상은 **WEB·NFS**입니다. Compose에는 DNS·FTP·MAIL 서비스 정의도 있지만 해당 이미지 구현은 아직 포함되어 있지 않습니다. WEB의 `web-html`·`web-logs`와 NFS의 `nfs-share`는 서로 독립된 Docker Volume입니다.
+
+### 접근 흐름
+
+![HTTP Client가 WEB에 접근하고 외부 Linux NFS Client가 NFSv4 공유에 접근하는 독립된 두 경로](docs/images/access-flow.svg)
+
+HTTP/HTTPS와 NFSv4 접근은 서로 독립적입니다. `myweb`은 호스트의 `8080`·`8443`에서 요청을 받고, `mynfs`는 외부 Linux Client가 TCP `2049`로 접근합니다. 현재 구성에는 WEB 로그를 NFS에 자동 Mount하는 연결이 없습니다.
 
 ## 역할과 책임
 
