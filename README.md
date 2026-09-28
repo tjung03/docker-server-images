@@ -15,7 +15,7 @@ flowchart LR
     N["외부 Linux NFS 클라이언트"] -->|"NFSv4 / TCP 2049"| S["mynfs<br/>NFSv4 서버"]
     S --> NS["nfs-share<br/>/exports 볼륨"]
 
-    W -. "depends_on: 시작 순서만 지정" .-> S
+    W -.-> S
 ```
 
 그림은 현재 `main`에서 직접 빌드할 수 있는 **WEB·NFS**만 나타냅니다. Compose에는 DNS·FTP·MAIL 서비스 정의도 있지만 해당 이미지 구현은 아직 포함되어 있지 않습니다. 또한 WEB 로그의 `web-logs`와 NFS의 `nfs-share`는 별도 볼륨이며, WEB 로그를 NFS로 자동 마운트하는 구성은 없습니다.
