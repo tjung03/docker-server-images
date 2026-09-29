@@ -10,6 +10,7 @@ NFS_EXPORT_NAME="${NFS_EXPORT_NAME:-share}"
 NFS_EXPORT_DIR="${NFS_EXPORT_DIR:-${NFS_V4_ROOT}/${NFS_EXPORT_NAME}}"
 NFS_LOG_DIR="${NFS_LOG_DIR:-${NFS_EXPORT_DIR}/logs}"
 
+# 기본 접근 대상(*)과 no_root_squash·쓰기 권한은 신뢰된 실습망을 전제한다. 공개망에서는 클라이언트와 권한을 제한해야 한다.
 NFS_ALLOWED_CLIENTS="${NFS_ALLOWED_CLIENTS:-*}"
 NFS_EXPORT_OPTIONS="${NFS_EXPORT_OPTIONS:-rw,sync,no_subtree_check,no_root_squash,insecure}"
 NFS_V4_ROOT_OPTIONS="${NFS_V4_ROOT_OPTIONS:-rw,fsid=0,crossmnt,no_subtree_check,no_root_squash,insecure}"
@@ -43,6 +44,7 @@ log "Allowed clients: ${NFS_ALLOWED_CLIENTS}"
 log "Export options: ${NFS_EXPORT_OPTIONS}"
 log "NFSv4 root options: ${NFS_V4_ROOT_OPTIONS}"
 
+# 첫 export의 fsid=0은 NFSv4 루트이며, 두 번째 export가 클라이언트에 /${NFS_EXPORT_NAME}로 보이는 공유 디렉터리다.
 log "Generating ${EXPORTS_FILE}"
 
 {
@@ -103,6 +105,7 @@ else
     exit 1
 fi
 
+# 종료 신호를 받거나 mountd가 끝나면 export와 nfsd 스레드를 정리한다.
 cleanup() {
     log "Stopping NFS server"
 
