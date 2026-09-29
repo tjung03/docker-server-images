@@ -44,7 +44,7 @@ log "Allowed clients: ${NFS_ALLOWED_CLIENTS}"
 log "Export options: ${NFS_EXPORT_OPTIONS}"
 log "NFSv4 root options: ${NFS_V4_ROOT_OPTIONS}"
 
-# 첫 export의 fsid=0은 NFSv4 루트이며, 두 번째 export가 클라이언트에 /${NFS_EXPORT_NAME}로 보이는 공유 디렉터리다.
+# 기본 설정은 첫 export를 fsid=0인 NFSv4 루트로, 두 번째를 실제 공유 디렉터리로 등록한다.
 log "Generating ${EXPORTS_FILE}"
 
 {
